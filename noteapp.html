@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy Note App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #4a0e8f, #1e3799);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #note-form {
+            background-color: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        #note-text {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        #add-note {
+            background-color: #ffd700;
+            color: #4a0e8f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #add-note:hover {
+            background-color: #ffec8b;
+        }
+        #notes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .note {
+            background-color: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .note:hover {
+            transform: scale(1.05);
+        }
+        .note p {
+            margin: 0;
+            padding-bottom: 30px;
+        }
+        .delete-note, .edit-note {
+            position: absolute;
+            bottom: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-note {
+            right: 5px;
+            background-color: #ff4d4d;
+            color: white;
+        }
+        .edit-note {
+            right: 70px;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fancy Note App</h1>
+        <div id="note-form">
+            <textarea id="note-text" placeholder="Enter your note here..." rows="4"></textarea>
+            <button id="add-note">Add Note</button>
+        </div>
+        <div id="notes-container"></div>
+    </div>
+
+    <script>
+        const noteText = document.getElementById('note-text');
+        const addNoteBtn = document.getElementById('add-note');
+        const notesContainer = document.getElementById('notes-container');
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let editingNoteId = null;
+
+        function renderNotes() {
+            notesContainer.innerHTML = '';
+            notes.forEach((note, index) => {
+                const noteElement = document.createElement('div');
+                noteElement.classList.add('note');
+                noteElement.innerHTML = `
+                    <p>${note}</p>
+                    <button class="edit-note" onclick="editNote(${index})">Edit</button>
+                    <button class="delete-note" onclick="deleteNote(${index})">Delete</button>
+                `;
+                notesContainer.appendChild(noteElement);
+            });
+            saveNotes();
+        }
+
+        function addNote() {
+            const text = noteText.value.trim();
+            if (text) {
+                if (editingNoteId !== null) {
+                    notes[editingNoteId] = text;
+                    editingNoteId = null;
+                    addNoteBtn.textContent = 'Add Note';
+                } else {
+                    notes.push(text);
+                }
+                noteText.value = '';
+                renderNotes();
+            }
+        }
+
+        function editNote(index) {
+            noteText.value = notes[index];
+            editingNoteId = index;
+            addNoteBtn.textContent = 'Update Note';
+            noteText.focus();
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            renderNotes();
+        }
+
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        addNoteBtn.addEventListener('click', addNote);
+        noteText.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addNote();
+            }
+        });
+
+        renderNotes();
+    </script>
+</body>
+</html>
